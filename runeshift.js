@@ -28,6 +28,7 @@ class Scene {
         this.sideRune = '';
         this.sideInfo = '';
         this.mode = 'offend';
+        this.skipColor = '#A0522D';
         this.bullets = [];
         this.interval = setInterval(() => {
             this.phaseManage();
@@ -180,7 +181,7 @@ class Scene {
                     }
                 }
                 if (offensives == false) {
-                    document.getElementById('skip').style.backgroundColor = "red";
+                    this.skipColor = 'red';
                 }
             }
         } else if (this.phase === 'run') {
@@ -249,7 +250,7 @@ class Scene {
 
     }
     skip() {
-        document.getElementById('skip').style.backgroundColor = "#A0522D";
+        this.skipColor = '#A0522D';
         if (this.mode !== 'defend') {
             this.useButton.x = -50;
             this.useButton.y = -50; faders = [];
@@ -551,7 +552,7 @@ class Scene {
         ctx.fillText(this.sideRune, 600 - ctx.measureText(this.sideRune).width / 2, 155);
         ctx.font = '16px sans-serif';
         this.fillTextMultiLine(ctx, this.sideInfo, 505, 180, 200);
-        ctx.fillStyle = '#A0522D';
+        ctx.fillStyle = this.skipColor;
         ctx.fillRect(this.skipButton.x,this.skipButton.y,this.skipButton.width,this.skipButton.height);
         ctx.fillStyle = 'white';
         ctx.fillText('Pass', this.skipButton.x + this.skipButton.width/2 -ctx.measureText('Pass').width/2,this.skipButton.y + 20);
