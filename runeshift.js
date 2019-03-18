@@ -57,7 +57,7 @@ class Scene {
             }
         }
     }
-    
+
     blank = {
         image: new Image(),
         level: "",
@@ -66,8 +66,8 @@ class Scene {
     skipButton = {
         x: 500,
         y: 370,
-        width:200,
-        height:30
+        width: 200,
+        height: 30
     }
     phaseManage() {
         let canvas = this.canvas;
@@ -170,7 +170,7 @@ class Scene {
                         }
                     }
                     if (over) {
-                        this.mode = "run";
+                        this.mode = 'run';
                         this.phase = 'run';
                     }
                 }
@@ -197,7 +197,7 @@ class Scene {
                         youEmpty = false;
                         break;
                     }
-                } else if(this.runes[i].name === 'Rage' && !this.youDodged){
+                } else if (this.runes[i].name === 'Rage' && !this.youDodged) {
                     this.youDodged = true;
                     this.bullets.push(new Boom(390, 400, 0, 0, "enem"));
                     youEmpty = false;
@@ -210,7 +210,7 @@ class Scene {
                         this.bullets.push(new Boom(100, 40, 500, 500, "you"));
                         this.enemRunes[i].level--;
                         break;
-                    } else if(this.enemRunes[i].name === 'Rage' && !this.enemDodged){
+                    } else if (this.enemRunes[i].name === 'Rage' && !this.enemDodged) {
                         this.enemDodged = true;
                         this.bullets.push(new Boom(100, 40, 500, 500, "you"));
                         enemEmpty = false;
@@ -266,7 +266,7 @@ class Scene {
         this.skipColor = '#A0522D';
         if (this.mode !== 'defend') {
             this.useButton.x = -50;
-            this.useButton.y = -50; 
+            this.useButton.y = -50;
             this.faders = [];
             this.mode = 'defend';
             this.faders.push(new Fader(50 + (this.runeSize + 80), (this.canvas.height / 2) - this.runeSize / 2, 'You Pass', this.blank, 'offend'));
@@ -355,8 +355,8 @@ class Scene {
         let canvas = this.canvas;
         if (this.phase === 'prep') {
             if (e.clientY > canvas.height - this.runeSize && e.clientY < canvas.height) {
+                let runed = Math.round(((e.clientX + this.runeSize / 2) / this.runeSize) - 1);
                 if (this.mode != "select") {
-                    let runed = Math.round(((e.clientX + this.runeSize / 2) / this.runeSize) - 1);
                     if (runed < this.maxRunes) {
                         if (runes[runed].name != "Apathy") {
                             this.useButton.x = -50;
@@ -366,7 +366,7 @@ class Scene {
                             if (this.mode == "offend") {
                                 if (runes[runed].type != "none" && runes[runed].type != "defense") {
                                     this.useButton.y = (canvas.height - this.runeSize) - this.useButton.height;
-                                    this.useButton.x = this.runeSize * runed;
+                                    this.useButton.x = this.runeSize * runed; 
                                 }
                             } else if (this.mode == "defend") {
                                 if (runes[runed].type != "none" && runes[runed].type != "offense") {
@@ -378,17 +378,41 @@ class Scene {
                             this.selectedRune = runed;
                         }
                     }
+                } else {
+                    if (runes[runed] && runes[this.selectedRune] && runes[this.selectedRune].name === 'Transmution') {
+                        if (this.runes[runed].level <= runes[this.selectedRune].level && runes[runed].name !== 'Apathy') {
+                            let transmute = true;
+                            for (let i = 0; i < this.enemRunes.length; i++) {
+                                if (this.enemRunes[i].name == "Rage" && this.enemRunes[i].level >= runes[this.selectedRune].level) {
+                                    this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Saved", this.runes[runed], "select"));
+                                    this.faders.push(new Fader(50 + 2 * (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Defense", this.enemRunes[i], "select"));
+                                    this.enemRunes[i] = new Apathy(0);
+                                    runes[this.selectedRune] = new Apathy(0);
+                                    transmute = false;
+                                    this.mode = "defend";
+                                    break;
+                                }
+                            }
+                            if (transmute) {
+                                this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Victim", this.runes[runed], "select"));
+                                runes[this.selectedRune] = new Apathy(0);
+                                let randRoll = Math.floor(Math.random() * 6) + 1;
+                                this.runes[runed] = new this.enemDice[runed][randRoll][0](this.dice[runed][randRoll][1]);
+                                this.mode = "defend";
+                            }
+                        }
+                    }
                 }
             } else if (e.clientY > 0 && e.clientY < this.runeSize) {
                 let runed = Math.round((((500 - e.clientX) + this.runeSize / 2) / this.runeSize) - 1);
-                if (runed < this.maxRunes) {
-                    if (this.mode != "select" && this.enemRunes[runed].name != "Apathy") {
+                if (runed < this.maxRunes && runed >= 0) {
+                    if (this.mode !== 'select' && this.enemRunes[runed].name !== 'Apathy') {
                         this.useButton.x = -50;
                         this.useButton.y = -50;
                         this.sideInfo = this.enemRunes[runed].descript;
                         this.sideRune = this.enemRunes[runed].name;
                         //selectedRune=runed;
-                    } else {
+                    } else if (runes[this.selectedRune]) {
                         if (runes[this.selectedRune].name == "Destruction") {
                             if (this.enemRunes[runed].name != "Apathy") {
                                 let kill = true;
@@ -570,9 +594,9 @@ class Scene {
         ctx.font = '16px sans-serif';
         this.fillTextMultiLine(ctx, this.sideInfo, 505, 180, 200);
         ctx.fillStyle = this.skipColor;
-        ctx.fillRect(this.skipButton.x,this.skipButton.y,this.skipButton.width,this.skipButton.height);
+        ctx.fillRect(this.skipButton.x, this.skipButton.y, this.skipButton.width, this.skipButton.height);
         ctx.fillStyle = 'white';
-        ctx.fillText('Pass', this.skipButton.x + this.skipButton.width/2 -ctx.measureText('Pass').width/2,this.skipButton.y + 20);
+        ctx.fillText('Pass', this.skipButton.x + this.skipButton.width / 2 - ctx.measureText('Pass').width / 2, this.skipButton.y + 20);
 
     }
 }
