@@ -205,17 +205,18 @@ class Scene {
                 }
             }
             for (let i = 0; i < this.enemRunes.length; i++) {
+                console.log(this.enemRunes[i].name === 'Rage', !this.enemDodged);
                 if (this.enemRunes[i].name == "Fury") {
                     if (this.enemRunes[i].level > 0) {
                         this.bullets.push(new Boom(100, 40, 500, 500, "you"));
                         this.enemRunes[i].level--;
                         break;
-                    } else if (this.enemRunes[i].name === 'Rage' && !this.enemDodged) {
-                        this.enemDodged = true;
-                        this.bullets.push(new Boom(100, 40, 500, 500, "you"));
-                        enemEmpty = false;
-                        break;
                     }
+                } else if (this.enemRunes[i].name === 'Rage' && !this.enemDodged) {
+                    this.enemDodged = true;
+                    this.bullets.push(new Boom(100, 40, 500, 500, "you"));
+                    enemEmpty = false;
+                    break;
                 }
             }
             if (enemEmpty && youEmpty) {
@@ -366,7 +367,7 @@ class Scene {
                             if (this.mode == "offend") {
                                 if (runes[runed].type != "none" && runes[runed].type != "defense") {
                                     this.useButton.y = (canvas.height - this.runeSize) - this.useButton.height;
-                                    this.useButton.x = this.runeSize * runed; 
+                                    this.useButton.x = this.runeSize * runed;
                                 }
                             } else if (this.mode == "defend") {
                                 if (runes[runed].type != "none" && runes[runed].type != "offense") {
@@ -417,7 +418,7 @@ class Scene {
                             if (this.enemRunes[runed].name != "Apathy") {
                                 let kill = true;
                                 for (let i = 0; i < this.enemRunes.length; i++) {
-                                    if (this.enemRunes[i].name == "Sustenance") {
+                                    if (this.enemRunes[i].name == "Sustenance" && i != runed) {
                                         this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Saved", this.enemRunes[runed], "select"));
                                         this.faders.push(new Fader(50 + (2 * (this.runeSize + 80)), (canvas.height / 2) - this.runeSize / 2, "Defense", this.enemRunes[i], "select"));
                                         this.enemRunes[i] = new Apathy(0);
@@ -438,7 +439,7 @@ class Scene {
                             if (this.enemRunes[runed].level <= runes[this.selectedRune].level && this.enemRunes[runed].name != "Apathy") {
                                 let transmute = true;
                                 for (let i = 0; i < this.enemRunes.length; i++) {
-                                    if (this.enemRunes[i].name == "Rage" && this.enemRunes[i].level >= runes[this.selectedRune].level) {
+                                    if (this.enemRunes[i].name == "Rage" && this.enemRunes[i].level >= runes[this.selectedRune].level && i != runed) {
                                         this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Saved", this.enemRunes[runed], "select"));
                                         this.faders.push(new Fader(50 + 2 * (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Defense", this.enemRunes[i], "select"));
                                         this.enemRunes[i] = new Apathy(0);
@@ -609,7 +610,9 @@ window.addEventListener('load', () => {
     deepink = ["Deep Ink", [Destruct, 0], [Trans, 5], [Regen, 3], [Regen, 2], [Sust, 1], [Invigor, 4]];
     drink = ["Dreary Ink", [Destruct, 0], [Impat, 1], [Pacif, 3], [Rage, 2], [Rage, 3], [Apathy, 0]];
     forink = ["Forsaken Ink", [Destruct, 0], [Invigor, 4], [Trans, 2], [Trans, 3], [Invigor, 3], [Fury, 3]];
+    //forink = ["Forsaken Ink", [Sust, 1], [Sust, 1], [Sust, 1], [Sust, 1], [Sust, 1], [Sust, 1]];
     dice = [mystink.concat(), deepink.concat(), drink.concat(), forink.concat(), drink.concat(), drink.concat()];//your current loadout
+    //dice = [forink.concat(), forink.concat(), forink.concat(), forink.concat(), forink.concat(), forink.concat()];//your current loadout
     enemDice = [mystink.concat(), deepink.concat(), drink.concat(), forink.concat(), drink.concat(), drink.concat()];//What runes your enemy has
     game = new Game(document.getElementById('canvas'), dice, enemDice);
 });
@@ -697,7 +700,7 @@ function Sust(level) {
     this.image = spriteManager.sustenance;
     this.action = function (scene) {
         if (scene.mode == "defend") {
-            if (scene.enemRunes[scene.attacker].name == "Impatience" || scene.enemRunes[scene.attacker].name == "Destruction") {
+            if (scene.enemRunes[scene.attacker].name == "Impatience" || scene.enemRunes[scene.attacker].name == "Destruction" && this != scene.runes[scene.targeted]) {
                 console.log(scene.runes[scene.selectedRune]);
                 scene.faders.push(new Fader(50 + 2 * (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.runes[scene.selectedRune], "defend"));
                 scene.runes[scene.selectedRune] = new Apathy(0);
@@ -885,7 +888,7 @@ function Rage(level) {
     this.action = function (scene) {
         if (scene.mode == "defend") {
             if (scene.runes[scene.selectedRune].level >= scene.enemRunes[scene.attacker].level) {
-                if (scene.enemRunes[scene.attacker].name == "Transmution" || scene.enemRunes[scene.attacker].name == "Pacification") {
+                if (scene.enemRunes[scene.attacker].name == "Transmution" || scene.enemRunes[scene.attacker].name == "Pacification" && this !== scene.runes[scene.targeted]) {
                     scene.faders.push(new Fader(50 + 2 * (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.runes[scene.selectedRune], "defend"));
                     scene.runes[scene.selectedRune] = new Apathy(0);
                     scene.enemRunes[scene.attacker] = new Apathy(0);
