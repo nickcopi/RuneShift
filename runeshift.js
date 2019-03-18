@@ -18,6 +18,7 @@ class Scene {
         this.enemMaxLife = 10;
         this.maxRunes = 6;
         this.runeSize = 65;
+        this.sideBarX = 600;
         this.canvas.addEventListener('click', this.click.bind(this));
         this.canvas.onmousemove = (event) => {
             this.x = event.clientX;
@@ -46,6 +47,14 @@ class Scene {
             height: 30,
         }
     }
+    you = {
+        x: 380,
+        y: 380
+    }
+    enem = {
+        x: 100,
+        y: 0
+    }
     fade() {
         for (let i = 0; i < this.faders.length; i++) {
             if (this.faders[i].type != this.mode) {
@@ -64,7 +73,7 @@ class Scene {
         name: ""
     }
     skipButton = {
-        x: 500,
+        x: 600,
         y: 370,
         width: 200,
         height: 30
@@ -192,29 +201,28 @@ class Scene {
             for (let i = 0; i < this.runes.length; i++) {
                 if (this.runes[i].name == "Fury") {
                     if (this.runes[i].level > 0) {
-                        this.bullets.push(new Boom(390, 400, 0, 0, "enem"));
+                        this.bullets.push(new Boom(this.you.x + 10, this.you.y + 20, this.enem.x-50, this.enem.y+120, "enem"));
                         this.runes[i].level--;
                         youEmpty = false;
                         break;
                     }
                 } else if (this.runes[i].name === 'Rage' && !this.youDodged) {
                     this.youDodged = true;
-                    this.bullets.push(new Boom(390, 400, 0, 0, "enem"));
+                    this.bullets.push(new Boom(this.you.x + 10, this.you.y + 20, this.enem.x-50, this.enem.y+120, "enem"));
                     youEmpty = false;
                     break;
                 }
             }
             for (let i = 0; i < this.enemRunes.length; i++) {
-                console.log(this.enemRunes[i].name === 'Rage', !this.enemDodged);
                 if (this.enemRunes[i].name == "Fury") {
                     if (this.enemRunes[i].level > 0) {
-                        this.bullets.push(new Boom(100, 40, 500, 500, "you"));
+                        this.bullets.push(new Boom(this.enem.x + 100, this.enem.y + 40, this.you.x + 120, this.you.y + 120, "you"));
                         this.enemRunes[i].level--;
                         break;
                     }
                 } else if (this.enemRunes[i].name === 'Rage' && !this.enemDodged) {
                     this.enemDodged = true;
-                    this.bullets.push(new Boom(100, 40, 500, 500, "you"));
+                    this.bullets.push(new Boom(this.enem.x + 100, this.enem.y + 40, this.you.x + 120, this.you.y + 120, "you"));
                     enemEmpty = false;
                     break;
                 }
@@ -405,7 +413,7 @@ class Scene {
                     }
                 }
             } else if (e.clientY > 0 && e.clientY < this.runeSize) {
-                let runed = Math.round((((500 - e.clientX) + this.runeSize / 2) / this.runeSize) - 1);
+                let runed = Math.round((((600 - e.clientX) + this.runeSize / 2) / this.runeSize) - 1);
                 if (runed < this.maxRunes && runed >= 0) {
                     if (this.mode !== 'select' && this.enemRunes[runed].name !== 'Apathy') {
                         this.useButton.x = -50;
@@ -504,20 +512,19 @@ class Scene {
         let enemRunes = this.enemRunes;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "green";
-        ctx.drawImage(spriteManager.bg, 0, 0, 500, canvas.height);
-        //ctx.drawImage(tree,10,180,96,180);
-        ctx.drawImage(spriteManager.tree, 400, 150, 96, 180);
+        ctx.drawImage(spriteManager.bg, 0, 0, 600, canvas.height);
+        ctx.drawImage(spriteManager.tree, 500, 150, 96, 180);
         for (let i = 0; i < this.bullets.length; i++) {
             ctx.drawImage(this.bullets[i].image, this.bullets[i].x, this.bullets[i].y)
         }
-        ctx.drawImage(spriteManager.you, 380, 380)
-        ctx.drawImage(spriteManager.enem, 0, 0)
+        ctx.drawImage(spriteManager.you, this.you.x, this.you.y)
+        ctx.drawImage(spriteManager.enem, this.enem.x, this.enem.y)
         //ok, so its time to write the code that draws runes, if they havent been rolled yet i.e. phase = roll, draw ink, otherwise draw em runes
         ctx.globalAlpha = Math.pow(this.runeOpac, 2)
         if (this.phase === 'roll' && this.runeOpac < 0) {
             for (let i = 0; i < 6; i++) {
                 ctx.drawImage(spriteManager.ink, runeSize * i, canvas.height - runeSize, runeSize, runeSize);
-                ctx.drawImage(spriteManager.ink, (500 - runeSize * i) - runeSize, 0, runeSize, runeSize);
+                ctx.drawImage(spriteManager.ink, (600 - runeSize * i) - runeSize, 0, runeSize, runeSize);
             }
         } else {
             for (let i = 0; i < runes.length; i++) {
@@ -534,12 +541,12 @@ class Scene {
             for (let i = 0; i < enemRunes.length; i++) {
                 ctx.fillStyle = "black";
                 if (enemRunes[i].name != "Apathy") {
-                    ctx.drawImage(enemRunes[i].image, (500 - runeSize * i) - runeSize, 0, runeSize, runeSize);
+                    ctx.drawImage(enemRunes[i].image, (600 - runeSize * i) - runeSize, 0, runeSize, runeSize);
                 }
                 if (enemRunes[i].name != "Destruction" && enemRunes[i].name != "Sustenance" && enemRunes[i].name != "Apathy") {
                     ctx.font = "20px sans-serif";
                     ctx.fillStyle = "white";
-                    ctx.fillText(enemRunes[i].level, (500 - runeSize * i) - runeSize + 5, runeSize - 10);
+                    ctx.fillText(enemRunes[i].level, (600 - runeSize * i) - runeSize + 5, runeSize - 10);
                 }
             }
 
@@ -562,38 +569,38 @@ class Scene {
         ctx.globalAlpha = 1;
         //sidebar shit
         ctx.fillStyle = "#49311C";
-        ctx.fillRect(500, 0, 200, canvas.height);
+        ctx.fillRect(this.sideBarX, 0, 200, canvas.height);
         //enem health
         ctx.fillStyle = "white";
         ctx.font = "20px sans-serif";
-        ctx.fillText(this.enemName + " Health", 502, 18);
+        ctx.fillText(this.enemName + " Health", this.sideBarX + 25, 22);
         ctx.fillStyle = "black";
-        ctx.fillRect(500, 30, 200, 30);
+        ctx.fillRect(this.sideBarX, 30, 200, 30);
         ctx.globalAlpha = .5;
         ctx.fillStyle = "red";
-        ctx.fillRect(500, 30, 200 * (this.enemLife / this.enemMaxLife), 30);
+        ctx.fillRect(this.sideBarX, 30, 200 * (this.enemLife / this.enemMaxLife), 30);
         ctx.globalAlpha = 1;
         ctx.fillStyle = "white";
         ctx.font = "20px sans-serif";
-        ctx.fillText(this.enemLife, 600, 50);
+        ctx.fillText(this.enemLife, this.sideBarX + 100, 50);
         //your health
         ctx.fillStyle = "white";
         ctx.font = "20px sans-serif";
-        ctx.fillText("Your Health", 555, 460);
+        ctx.fillText("Your Health", this.sideBarX + 55, 460);
         ctx.fillStyle = "black";
-        ctx.fillRect(500, 470, 200, 30);
+        ctx.fillRect(this.sideBarX, 470, 200, 30);
         ctx.globalAlpha = .5;
         ctx.fillStyle = "red";
-        ctx.fillRect(500, 470, 200 * (this.youLife / this.youMaxLife), 30);
+        ctx.fillRect(this.sideBarX, 470, 200 * (this.youLife / this.youMaxLife), 30);
         ctx.globalAlpha = 1;
         ctx.fillStyle = "white";
         ctx.font = "20px sans-serif";
-        ctx.fillText(this.youLife, 600, 490);
+        ctx.fillText(this.youLife, this.sideBarX + 100, 490);
         //Name and image of rune
         ctx.font = "20px sans-serif";
-        ctx.fillText(this.sideRune, 600 - ctx.measureText(this.sideRune).width / 2, 155);
+        ctx.fillText(this.sideRune, this.sideBarX + 100 - ctx.measureText(this.sideRune).width / 2, 155);
         ctx.font = '16px sans-serif';
-        this.fillTextMultiLine(ctx, this.sideInfo, 505, 180, 200);
+        this.fillTextMultiLine(ctx, this.sideInfo, this.sideBarX + 5, 180, 200);
         ctx.fillStyle = this.skipColor;
         ctx.fillRect(this.skipButton.x, this.skipButton.y, this.skipButton.width, this.skipButton.height);
         ctx.fillStyle = 'white';
@@ -667,10 +674,10 @@ function Destruct(level) {
             }
             if (use) {
                 scene.mode = "select";
-                sidfo.innerHTML = "Select any one of the enemy's runes to destroy.";
+                scene.sideInfo = "Select any one of the enemy's runes to destroy.";
                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "select"));
             } else {
-                sidfo.innerHTML = "No enemy runes left to destroy.";
+                scene.sideInfo = "No enemy runes left to destroy.";
                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Discarded", scene.runes[scene.selectedRune], "select"));
                 scene.runes[scene.selectedRune] = new Apathy(0);
                 scene.mode = "defend";
@@ -738,10 +745,10 @@ function Trans(level) {
             }
             if (use) {
                 scene.mode = "select";
-                sidfo.innerHTML = "Select one of the enemy's runes of equal or lesser level to retransmute.";
+                scene.sideInfo = "Select one of the enemy's runes of equal or lesser level to retransmute.";
                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "select"));
             } else {
-                sidfo.innerHTML = "No appropriate runes to transmute.";
+                scene.sideInfo = "No appropriate runes to transmute.";
                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.sruneSize / 2, "Discarded", scene.runes[scene.selectedRune], "select"));
                 scene.runes[scene.selectedRune] = new Apathy(0);
                 scene.mode = "defend";
@@ -853,10 +860,10 @@ function Pacif(level) {
             }
             if (use) {
                 scene.mode = "select";
-                sidfo.innerHTML = "Select one of the enemy's fury runes of equal or lesser level to remove.";
+                scene.sideInfo = "Select one of the enemy's fury runes of equal or lesser level to remove.";
                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "select"));
             } else {
-                sidfo.innerHTML = "No appropriate runes to remove.";
+                scene.sideInfo = "No appropriate runes to remove.";
                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Discarded", scene.runes[scene.selectedRune], "select"));
                 scene.runes[scene.selectedRune] = new Apathy(0);
                 scene.mode = "defend";
@@ -922,7 +929,7 @@ function Impat(level) {
             if (attack) {
                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
                 for (let i = 0; i < scene.runes[scene.selectedRune].level; i++) {
-                    scene.bullets.push(new Boom(390, 400, 0, 0, "enem"))
+                    scene.bullets.push(new Boom(scene.you.x + 10, scene.you.y + 20, scene.enem.x-50, scene.enem.y+120, "enem"))
                 }
                 scene.runes[scene.selectedRune] = new Apathy(0);
                 scene.mode = "defend";
@@ -937,7 +944,7 @@ function Impat(level) {
             }
             if (go) {
                 for (let i = 0; i < scene.enemRunes[scene.attacker].level; i++) {
-                    scene.bullets.push(new Boom(100, 40, 500, 500, "you"))
+                    scene.bullets.push(new Boom(scene.enem.x + 100, scene.enem.y + 40, scene.you.x + 120, scene.you.y + 120, "you"))
                 }
                 scene.enemRunes[scene.attacker] = new Apathy(0);
                 scene.mode = "offend";
