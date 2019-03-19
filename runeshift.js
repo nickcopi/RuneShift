@@ -434,7 +434,7 @@ class Scene {
                     }
                 } else {
                     if (runes[runed] && runes[this.selectedRune] && runes[this.selectedRune].name === 'Transmution') {
-                        if (this.runes[runed].level <= runes[this.selectedRune].level && runes[runed].name !== 'Apathy') {
+                        if (this.runes[runed].level <= runes[this.selectedRune].level && runes[runed].name !== 'Apathy' && runed !== this.selectedRune) {
                             let transmute = true;
                             for (let i = 0; i < this.enemRunes.length; i++) {
                                 if (this.enemRunes[i].name == "Rage" && this.enemRunes[i].level >= runes[this.selectedRune].level) {
@@ -817,7 +817,7 @@ function Trans(level) {
                 }
             }
             for (i = 0; i < scene.runes.length; i++) {
-                if (scene.runes[i].level <= scene.runes[scene.selectedRune].level && scene.runes[i].name != "Apathy") {
+                if (scene.runes[i].level <= scene.runes[scene.selectedRune].level && scene.runes[i].name != "Apathy" && i !== scene.selectedRune) {
                     use = true;
                     break;
                 }
