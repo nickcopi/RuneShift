@@ -250,6 +250,7 @@ class Scene {
                     if (this.enemRunes[i].level > 0) {
                         this.bullets.push(new Boom(this.enem.x + 100, this.enem.y + 40, this.you.x + 120, this.you.y + 120, "you"));
                         this.enemRunes[i].level--;
+                        enemEmpty = false;
                         break;
                     }
                 } else if (this.enemRunes[i].name === 'Rage' && !this.enemDodged) {
@@ -686,10 +687,10 @@ class Scene {
 let game;
 
 window.addEventListener('load', () => {
-    mystink = ["Mysterious Ink", [Destruct, 0], [Fury, 2], [Fury, 2], [Decay, 2], [Sust, 1], [Balance, 2]]//dice start at 1, name is at 0
+    mystink = ["Mysterious Ink", [Destruct, 0], [Unknown, 2], [Fury, 2], [Decay, 2], [Sust, 1], [Balance, 2]]//dice start at 1, name is at 0
     deepink = ["Deep Ink", [Destruct, 0], [Trans, 5], [Regen, 3], [Regen, 2], [Sust, 1], [Invigor, 4]];
-    drink = ["Dreary Ink", [Destruct, 0], [Impat, 1], [Pacif, 3], [Rage, 2], [Rage, 3], [Apathy, 0]];
-    forink = ["Forsaken Ink", [Destruct, 0], [Invigor, 4], [Trans, 2], [Trans, 3], [Invigor, 3], [Fury, 3]];
+    drink = ["Dreary Ink", [Destruct, 0], [Impat, 1], [Pacif, 3], [Rage, 2], [Unknown, 3], [Apathy, 0]];
+    forink = ["Forsaken Ink", [Destruct, 0], [Invigor, 4], [Unknown, 2], [Trans, 3], [Invigor, 3], [Fury, 3]];
     //forink = ["Forsaken Ink", [Sust, 1], [Sust, 1], [Sust, 1], [Sust, 1], [Sust, 1], [Sust, 1]];
     dice = [mystink.concat(), deepink.concat(), drink.concat(), forink.concat(), drink.concat(), drink.concat()];//your current loadout
     //dice = [forink.concat(), forink.concat(), forink.concat(), forink.concat(), forink.concat(), forink.concat()];//your current loadout
@@ -791,15 +792,6 @@ function Sust(level) {
     }
 }
 
-function Unknown(level) {
-    this.name = "Unknown";
-    this.type = "offense";
-    this.descript = "Can transform into one of 4 types of Runes.";
-    this.level = level;
-    this.action = function () {
-        //transmution options
-    }
-}
 
 function Trans(level) {
     this.name = "Transmution";
@@ -1106,6 +1098,41 @@ function Invigor(level) {
                 }
             }
             scene.enemRunes[scene.attacker] = new Apathy(0);
+            scene.mode = "offend";
+        }
+    }
+}
+
+function Unknown(level) {
+    this.name = "Unknown";
+    this.type = "offense";
+    this.descript = "Randomly transforms into either a fury, pacification, transmution, or rage rune.";
+    this.level = level;
+    this.image = spriteManager.unknown;
+    this.action = function (scene) {
+        let newRune;
+        switch(Math.floor(Math.random()*4)){
+            case 0:
+                newRune = Fury;
+            break;
+            case 1:
+                newRune = Rage;
+            break;
+            case 2:
+                newRune = Trans;
+            break;
+            case 3:
+                newRune = Pacif;
+            break;
+        }
+        if (scene.mode == "offend") {
+            scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
+            let level = scene.runes[scene.selectedRune].level;
+            scene.runes[scene.selectedRune] = new newRune(level);
+            scene.mode = "defend";
+        } else if (scene.mode == "defend") {
+            let level = scene.enemRunes[scene.attacker].level;
+            scene.enemRunes[scene.attacker] = new newRune(level);
             scene.mode = "offend";
         }
     }
