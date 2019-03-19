@@ -121,7 +121,7 @@ class Scene {
             if (this.mode == "defend" && this.faders == '') {
                 let names = [];
                 let offensives = [];
-                if (Math.random() > 1/10 && !this.enemLocked) {
+                if (Math.random() > 9/10 && !this.enemLocked) {
                     for(let i = 0; i < 40; i++){
                         let randRoll = Math.floor(Math.random() * 6);
                         if(this.enemRunes[randRoll].name !== 'Apathy'){
@@ -812,6 +812,12 @@ function Trans(level) {
             let use = false;
             for (i = 0; i < scene.enemRunes.length; i++) {
                 if (scene.enemRunes[i].level <= scene.runes[scene.selectedRune].level && scene.enemRunes[i].name != "Apathy") {
+                    use = true;
+                    break;
+                }
+            }
+            for (i = 0; i < scene.runes.length; i++) {
+                if (scene.runes[i].level <= scene.runes[scene.selectedRune].level && scene.runes[i].name != "Apathy") {
                     use = true;
                     break;
                 }
