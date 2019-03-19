@@ -17,6 +17,7 @@ class Scene {
         this.enemLife = 10;
         this.enemMaxLife = 10;
         this.maxRunes = 6;
+        this.youLocked;
         this.runeSize = 65;
         this.sideBarX = 600;
         this.canvas.addEventListener('click', this.click.bind(this));
@@ -78,6 +79,12 @@ class Scene {
         width: 200,
         height: 30
     }
+    lockButton = {
+        x: 600,
+        y: 340,
+        width: 200,
+        height: 30
+    }
     phaseManage() {
         let canvas = this.canvas;
         if (this.phase === 'roll') {
@@ -86,22 +93,47 @@ class Scene {
             this.enemRunes = [];
             if (this.runeOpac > 0) {
                 for (let i = 0; i < this.dice.length; i++) {
+                    if (i === this.youLockedIndex) {
+                        this.runes.push(this.youLocked);
+                        continue;
+                    }
                     let randRoll = Math.floor(Math.random() * 6) + 1;
                     this.runes.push(new this.dice[i][randRoll][0](this.dice[i][randRoll][1]));
                 }
                 for (let i = 0; i < this.enemDice.length; i++) {
+                    if (i === this.enemLockedIndex) {
+                        this.enemRunes.push(this.enemLocked);
+                        continue;
+                    }
                     let randRoll = Math.floor(Math.random() * 6) + 1;
                     this.enemRunes.push(new this.enemDice[i][randRoll][0](this.enemDice[i][randRoll][1]));
                 }
             }
             if (this.runeOpac >= 1) {
+                this.youLocked = null;
+                this.youLockedIndex = -1;
+                this.enemLocked = null;
+                this.enemLockedIndex = -1;
                 this.phase = 'prep';
                 this.mode = "offend";
             }
         } else if (this.phase === 'prep') {
-            if (this.mode == "defend" && this.faders == "") {
+            if (this.mode == "defend" && this.faders == '') {
                 let names = [];
                 let offensives = [];
+                if (Math.random() > 1/10 && !this.enemLocked) {
+                    for(let i = 0; i < 40; i++){
+                        let randRoll = Math.floor(Math.random() * 6);
+                        if(this.enemRunes[randRoll].name !== 'Apathy'){
+                            this.enemLocked = this.enemRunes[randRoll];
+                            this.enemLockedIndex = randRoll;
+                            this.enemRunes[randRoll] = new Apathy(0);
+                            this.faders.push(new Fader(50 + (this.runeSize + 80), (this.canvas.height / 2) - this.runeSize / 2, 'Locked', this.blank, 'defend'));
+                            this.mode = "offend";
+                            return;
+                        }
+                    }
+                }
                 for (let i = 0; i < this.enemRunes.length; i++) {
                     if (this.enemRunes[i].type == "offense") {
                         offensives.push(this.enemRunes[i]);
@@ -201,14 +233,14 @@ class Scene {
             for (let i = 0; i < this.runes.length; i++) {
                 if (this.runes[i].name == "Fury") {
                     if (this.runes[i].level > 0) {
-                        this.bullets.push(new Boom(this.you.x + 10, this.you.y + 20, this.enem.x-50, this.enem.y+120, "enem"));
+                        this.bullets.push(new Boom(this.you.x + 10, this.you.y + 20, this.enem.x - 50, this.enem.y + 120, "enem"));
                         this.runes[i].level--;
                         youEmpty = false;
                         break;
                     }
                 } else if (this.runes[i].name === 'Rage' && !this.youDodged) {
                     this.youDodged = true;
-                    this.bullets.push(new Boom(this.you.x + 10, this.you.y + 20, this.enem.x-50, this.enem.y+120, "enem"));
+                    this.bullets.push(new Boom(this.you.x + 10, this.you.y + 20, this.enem.x - 50, this.enem.y + 120, "enem"));
                     youEmpty = false;
                     break;
                 }
@@ -270,6 +302,19 @@ class Scene {
         this.mode = 'offend';
 
 
+    }
+    lock() {
+        if (this.youLocked) return;
+        if (this.mode !== 'defend' && this.runes[this.selectedRune]) {
+            this.youLockedIndex = this.selectedRune;
+            this.youLocked = this.runes[this.selectedRune];
+            this.useButton.x = -50;
+            this.useButton.y = -50;
+            this.faders = [];
+            this.mode = 'defend';
+            this.faders.push(new Fader(50 + (this.runeSize + 80), (this.canvas.height / 2) - this.runeSize / 2, 'Locked', this.blank, 'offend'));
+            this.runes[this.selectedRune] = new Apathy(0);
+        }
     }
     skip() {
         this.skipColor = '#A0522D';
@@ -501,6 +546,9 @@ class Scene {
             if (e.clientX > this.skipButton.x && e.clientX < this.skipButton.x + this.skipButton.width && e.clientY > this.skipButton.y && e.clientY < this.skipButton.y + this.skipButton.height) {
                 this.skip();
             }
+            if (e.clientX > this.lockButton.x && e.clientX < this.lockButton.x + this.lockButton.width && e.clientY > this.lockButton.y && e.clientY < this.lockButton.y + this.lockButton.height) {
+                this.lock();
+            }
         }
     }
     render() {
@@ -528,14 +576,14 @@ class Scene {
             }
         } else {
             for (let i = 0; i < runes.length; i++) {
-                ctx.fillStyle = "black";
+                let x = runeSize * i;
                 if (runes[i].name != "Apathy") {
-                    ctx.drawImage(runes[i].image, runeSize * i, canvas.height - runeSize, runeSize, runeSize);
+                    ctx.drawImage(runes[i].image, x, canvas.height - runeSize, runeSize, runeSize);
                 }
                 if (runes[i].name != "Destruction" && runes[i].name != "Sustenance" && runes[i].name != "Apathy") {
                     ctx.font = "20px sans-serif";
                     ctx.fillStyle = "white";
-                    ctx.fillText(runes[i].level, runeSize * i + 5, canvas.height - 10);
+                    ctx.fillText(runes[i].level, x + 5, canvas.height - 10);
                 }
             }
             for (let i = 0; i < enemRunes.length; i++) {
@@ -550,6 +598,26 @@ class Scene {
                 }
             }
 
+        }
+        if (this.youLocked) {
+            ctx.fillStyle = "black";
+            ctx.fillText("Locked", 500 + 5, canvas.height - 70);
+            ctx.drawImage(this.youLocked.image, 500, canvas.height - runeSize, runeSize, runeSize);
+            if (this.youLocked.name != "Destruction" && this.youLocked.name != "Sustenance") {
+                ctx.font = "20px sans-serif";
+                ctx.fillStyle = "white";
+                ctx.fillText(this.youLocked.level, 500 + 5, canvas.height - 10);
+            }
+        }
+        if (this.enemLocked) {
+            ctx.fillStyle = "black";
+            ctx.fillText("Locked", 25, runeSize + 20);
+            ctx.drawImage(this.enemLocked.image, 20, 0, runeSize, runeSize);
+            if (this.enemLocked.name != "Destruction" && this.enemLocked.name != "Sustenance") {
+                ctx.font = "20px sans-serif";
+                ctx.fillStyle = "white";
+                ctx.fillText(this.enemLocked.level, 25, runeSize - 10);
+            }
         }
         ctx.globalAlpha = 1;
         //draw use button
@@ -605,6 +673,11 @@ class Scene {
         ctx.fillRect(this.skipButton.x, this.skipButton.y, this.skipButton.width, this.skipButton.height);
         ctx.fillStyle = 'white';
         ctx.fillText('Pass', this.skipButton.x + this.skipButton.width / 2 - ctx.measureText('Pass').width / 2, this.skipButton.y + 20);
+
+        ctx.fillStyle = '#A0522D';
+        ctx.fillRect(this.lockButton.x, this.lockButton.y, this.lockButton.width, this.lockButton.height);
+        ctx.fillStyle = 'white';
+        ctx.fillText('Lock', this.lockButton.x + this.lockButton.width / 2 - ctx.measureText('Lock').width / 2, this.lockButton.y + 20);
 
     }
 }
@@ -756,7 +829,7 @@ function Trans(level) {
         } else if (scene.mode == "defend") {
             risk = true;
             for (i = 0; i < scene.runes.length; i++) {
-                if (scene.runes[i].name == "Rage" && scene.runes[i].level >= scene.enemRunes[scene.attacker].level && !scene.skipping) {
+                if (scene.runes[i].name == "Rage" && scene.runes[i].level >= scene.enemRunes[scene.attacker].level && !scene.skipping && i != scene.targeted) {
                     risk = false;
                     break;
                 }
@@ -929,7 +1002,7 @@ function Impat(level) {
             if (attack) {
                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
                 for (let i = 0; i < scene.runes[scene.selectedRune].level; i++) {
-                    scene.bullets.push(new Boom(scene.you.x + 10, scene.you.y + 20, scene.enem.x-50, scene.enem.y+120, "enem"))
+                    scene.bullets.push(new Boom(scene.you.x + 10, scene.you.y + 20, scene.enem.x - 50, scene.enem.y + 120, "enem"))
                 }
                 scene.runes[scene.selectedRune] = new Apathy(0);
                 scene.mode = "defend";
