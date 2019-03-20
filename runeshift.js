@@ -308,7 +308,7 @@ class Scene {
     }
     lock() {
         if (this.youLocked) return;
-        if (this.mode !== 'defend' && this.runes[this.selectedRune]) {
+        if (this.mode !== 'defend' && this.runes[this.selectedRune] && this.runes[this.selectedRune].name !== 'Apathy') {
             this.youLockedIndex = this.selectedRune;
             this.youLocked = this.runes[this.selectedRune];
             this.useButton.x = -50;
