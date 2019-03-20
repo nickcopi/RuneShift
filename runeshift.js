@@ -12,10 +12,10 @@ class Scene {
         this.enemDice = enemDice;
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
-        this.youLife = 10;
-        this.youMaxLife = 10;
-        this.enemLife = 10;
-        this.enemMaxLife = 10;
+        this.youLife = 20;
+        this.youMaxLife = this.youLife;
+        this.enemLife = 20;
+        this.enemMaxLife = this.enemLife;
         this.maxRunes = 6;
         this.youLocked;
         this.runeSize = 65;
@@ -34,6 +34,8 @@ class Scene {
         this.bullets = [];
         this.faders = [];
         this.runes = [];
+        this.enemUsed = [];
+        this.youUsed = [];
         this.interval = setInterval(() => {
             this.phaseManage();
             this.fade();
@@ -554,6 +556,9 @@ class Scene {
             }
         }
     }
+    drawLevel(die){
+        return die.name !== 'Destruction' && die.name !== 'Sustenance' && die.name !== 'Apathy' && die.name !== 'Decay' && die.name !== 'Balance' && die.name !== 'Time';
+    }
     render() {
         let ctx = this.ctx;
         let canvas = this.canvas;
@@ -583,7 +588,7 @@ class Scene {
                 if (runes[i].name != "Apathy") {
                     ctx.drawImage(runes[i].image, x, canvas.height - runeSize, runeSize, runeSize);
                 }
-                if (runes[i].name != "Destruction" && runes[i].name != "Sustenance" && runes[i].name != "Apathy") {
+                if (this.drawLevel(runes[i])) {
                     ctx.font = "20px sans-serif";
                     ctx.fillStyle = "white";
                     ctx.fillText(runes[i].level, x + 5, canvas.height - 10);
@@ -594,7 +599,7 @@ class Scene {
                 if (enemRunes[i].name != "Apathy") {
                     ctx.drawImage(enemRunes[i].image, (600 - runeSize * i) - runeSize, 0, runeSize, runeSize);
                 }
-                if (enemRunes[i].name != "Destruction" && enemRunes[i].name != "Sustenance" && enemRunes[i].name != "Apathy") {
+                if (this.drawLevel(enemRunes[i])) {
                     ctx.font = "20px sans-serif";
                     ctx.fillStyle = "white";
                     ctx.fillText(enemRunes[i].level, (600 - runeSize * i) - runeSize + 5, runeSize - 10);
@@ -606,7 +611,7 @@ class Scene {
             ctx.fillStyle = "black";
             ctx.fillText("Locked", 500 + 5, canvas.height - 70);
             ctx.drawImage(this.youLocked.image, 500, canvas.height - runeSize, runeSize, runeSize);
-            if (this.youLocked.name != "Destruction" && this.youLocked.name != "Sustenance") {
+            if (this.drawLevel(this.youLocked)) {
                 ctx.font = "20px sans-serif";
                 ctx.fillStyle = "white";
                 ctx.fillText(this.youLocked.level, 500 + 5, canvas.height - 10);
@@ -616,7 +621,7 @@ class Scene {
             ctx.fillStyle = "black";
             ctx.fillText("Locked", 25, runeSize + 20);
             ctx.drawImage(this.enemLocked.image, 20, 0, runeSize, runeSize);
-            if (this.enemLocked.name != "Destruction" && this.enemLocked.name != "Sustenance") {
+            if (this.drawLevel(this.enemLocked)) {
                 ctx.font = "20px sans-serif";
                 ctx.fillStyle = "white";
                 ctx.fillText(this.enemLocked.level, 25, runeSize - 10);
@@ -632,7 +637,7 @@ class Scene {
             ctx.globalAlpha = faders[i].opac;
             ctx.drawImage(faders[i].rune.image, faders[i].x, faders[i].y, runeSize, runeSize);
             ctx.fillText(faders[i].text, faders[i].x - 10, faders[i].y)
-            if (faders[i].rune.name != "Destruction" && faders[i].rune.name != "Sustenance" && faders[i].rune.name != "Apathy") {
+            if (this.drawLevel(faders[i].rune)) {
                 ctx.fillText(faders[i].rune.level, faders[i].x + 5, faders[i].y + (runeSize - 5))
             }
             ctx.fillText(faders[i].rune.name, faders[i].x - 5, faders[i].y + (runeSize + 15))
@@ -727,7 +732,7 @@ class Scene {
                     if (scene.mode == "offend") {
                         let drain = true;
                         for (let i = 0; i < scene.enemRunes.length; i++) {
-                            if (scene.enemRunes[i].name == "Balance" && scene.enemRunes[i].level >= scene.runes[scene.selectedRune].level) {
+                            if (scene.enemRunes[i].name == "Balance") {
                                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
                                 scene.faders.push(new Fader(50 + (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.enemRunes[i], "offend"));
                                 scene.enemRunes[i] = new scene.runeClasses.Apathy(0);
@@ -739,7 +744,7 @@ class Scene {
                         }
                         if (drain) {
                             for (let i = 0; i < scene.enemRunes.length; i++) {
-                                scene.enemRunes[i].level -= scene.runes[scene.selectedRune].level;
+                                scene.enemRunes[i].level -= 1;
                                 if (scene.enemRunes[i].level < 0) {
                                     scene.enemRunes[i].level = 0;
                                 }
@@ -751,14 +756,14 @@ class Scene {
                     } else if (scene.mode == "defend") {
                         let stab = true;
                         for (let i = 0; i < scene.runes.length; i++) {
-                            if (scene.runes[i].name == "Balance" && scene.runes[i].level >= scene.enemRunes[scene.attacker].level && !scene.skipping) {
+                            if (scene.runes[i].name == "Balance"  && !scene.skipping) {
                                 stab = false;
                                 break;
                             }
                         }
                         if (stab) {
                             for (let i = 0; i < scene.runes.length; i++) {
-                                scene.runes[i].level -= scene.enemRunes[scene.attacker].level;
+                                scene.runes[i].level -= 1;
                                 if (scene.runes[i].level < 0) {
                                     scene.runes[i].level = 0;
                                 }
@@ -985,7 +990,7 @@ class Scene {
                     if (scene.mode == "offend") {
                         let heal = true;
                         for (let i = 0; i < scene.enemRunes.length; i++) {
-                            if (scene.enemRunes[i].name == "Balance" && scene.enemRunes[i].level >= this.level) {
+                            if (scene.enemRunes[i].name == "Balance") {
                                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
                                 scene.faders.push(new Fader(50 + (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.enemRunes[i], "offend"));
                                 scene.enemRunes[i] = new scene.runeClasses.Apathy(0);
@@ -1007,7 +1012,7 @@ class Scene {
                     } else if (scene.mode == "defend") {
                         let stab = true;
                         for (let i = 0; i < scene.runes.length; i++) {
-                            if (scene.runes[i].name == "Balance" && scene.runes[i].level >= scene.enemRunes[scene.attacker].level && !scene.skipping) {
+                            if (scene.runes[i].name == "Balance" && !scene.skipping) {
                                 stab = false;
                                 break;
                             }
@@ -1035,7 +1040,6 @@ class Scene {
                 this.action = function (scene) {
                     if (scene.mode == "defend") {
                         if (scene.enemRunes[scene.attacker].name == "Impatience" || scene.enemRunes[scene.attacker].name == "Destruction" && this != scene.runes[scene.targeted]) {
-                            console.log(scene.runes[scene.selectedRune]);
                             scene.faders.push(new Fader(50 + 2 * (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.runes[scene.selectedRune], "defend"));
                             scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                             scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
