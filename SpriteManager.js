@@ -17,6 +17,7 @@ class SpriteManager {
         this.fury = this.newImage('fury.png');
         this.impatience = this.newImage('impatience.png');
         this.invigoration = this.newImage('invigoration.png');
+        this.time = this.newImage('time.png');
         this.unknown = this.newImage('unknown.png');
         this.bullet = this.newImage('cube-bullet.png');
         this.useButton = this.newImage('use-button.png');

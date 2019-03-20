@@ -118,6 +118,8 @@ class Scene {
                 this.youLockedIndex = -1;
                 this.enemLocked = null;
                 this.enemLockedIndex = -1;
+                this.youUsed = [];
+                this.enemUsed = [];
                 this.phase = 'prep';
                 this.mode = "offend";
             }
@@ -125,6 +127,7 @@ class Scene {
             if (this.mode == "defend" && this.faders == '') {
                 let names = [];
                 let offensives = [];
+                /*Random chance to lock rune */
                 if (Math.random() > 9 / 10 && !this.enemLocked) {
                     for (let i = 0; i < 40; i++) {
                         let randRoll = Math.floor(Math.random() * 6);
@@ -303,6 +306,7 @@ class Scene {
             }
         }
         this.faders.push(new Fader(50, (this.canvas.height / 2) - this.runeSize / 2, 'Discarded', this.enemRunes[this.attacker], 'defend'));
+        this.enemUsed.push(this.enemRunes[this.attacker]);
         this.enemRunes[this.attacker] = new this.runeClasses.Apathy(0);
         this.mode = 'offend';
 
@@ -394,7 +398,7 @@ class Scene {
         text.split(" ").forEach(t => {
             let width = ctx.measureText(t).width;
             totalWidth += width;
-            if (x + totalWidth > this.canvas.width - 85) {
+            if (x + totalWidth > this.canvas.width - 90) {
                 strings.push(currentString);
                 totalWidth = 0;
                 currentString = '';
@@ -445,7 +449,9 @@ class Scene {
                                 if (this.enemRunes[i].name == "Rage" && this.enemRunes[i].level >= runes[this.selectedRune].level) {
                                     this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Saved", this.runes[runed], "select"));
                                     this.faders.push(new Fader(50 + 2 * (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Defense", this.enemRunes[i], "select"));
+                                    this.enemUsed.push(this.enemRunes[i]);
                                     this.enemRunes[i] = new this.runeClasses.Apathy(0);
+                                    this.youUsed.push(runes[this.selectedRune]);
                                     runes[this.selectedRune] = new this.runeClasses.Apathy(0);
                                     transmute = false;
                                     this.mode = "defend";
@@ -454,6 +460,7 @@ class Scene {
                             }
                             if (transmute) {
                                 this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Victim", this.runes[runed], "select"));
+                                this.youUsed.push(runes[this.selectedRune]);
                                 runes[this.selectedRune] = new this.runeClasses.Apathy(0);
                                 let randRoll = Math.floor(Math.random() * 6) + 1;
                                 this.runes[runed] = new this.runeClasses[this.enemDice[runed][randRoll][0]](this.dice[runed][randRoll][1]);
@@ -479,7 +486,9 @@ class Scene {
                                     if (this.enemRunes[i].name == "Sustenance" && i != runed) {
                                         this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Saved", this.enemRunes[runed], "select"));
                                         this.faders.push(new Fader(50 + (2 * (this.runeSize + 80)), (canvas.height / 2) - this.runeSize / 2, "Defense", this.enemRunes[i], "select"));
+                                        this.enemUsed.push(this.enemRunes[i]);
                                         this.enemRunes[i] = new this.runeClasses.Apathy(0);
+                                        this.youUsed.push(runes[this.selectedRune]);
                                         runes[this.selectedRune] = new this.runeClasses.Apathy(0);
                                         kill = false;
                                         this.mode = "defend";
@@ -488,7 +497,9 @@ class Scene {
                                 }
                                 if (kill) {
                                     this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Victim", this.enemRunes[runed], "select"));
+                                    this.youUsed.push(runes[this.selectedRune]);
                                     runes[this.selectedRune] = new this.runeClasses.Apathy(0);
+                                    this.enemUsed.push(this.enemRunes[runed]);
                                     this.enemRunes[runed] = new this.runeClasses.Apathy(0);
                                     this.mode = "defend";
                                 }
@@ -500,7 +511,9 @@ class Scene {
                                     if (this.enemRunes[i].name == "Rage" && this.enemRunes[i].level >= runes[this.selectedRune].level && i != runed) {
                                         this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Saved", this.enemRunes[runed], "select"));
                                         this.faders.push(new Fader(50 + 2 * (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Defense", this.enemRunes[i], "select"));
+                                        this.enemUsed.push(this.enemRunes[i]);
                                         this.enemRunes[i] = new this.runeClasses.Apathy(0);
+                                        this.youUsed.push(runes[this.selectedRune]);
                                         runes[this.selectedRune] = new this.runeClasses.Apathy(0);
                                         transmute = false;
                                         this.mode = "defend";
@@ -509,6 +522,7 @@ class Scene {
                                 }
                                 if (transmute) {
                                     this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Victim", this.enemRunes[runed], "select"));
+                                    this.youUsed.push(runes[this.selectedRune]);
                                     runes[this.selectedRune] = new this.runeClasses.Apathy(0);
                                     let randRoll = Math.floor(Math.random() * 6) + 1;
                                     this.enemRunes[runed] = new this.runeClasses[this.enemDice[runed][randRoll][0]](this.enemDice[runed][randRoll][1]);
@@ -522,7 +536,9 @@ class Scene {
                                     if (this.enemRunes[i].name == "Rage" && this.enemRunes[i].level >= runes[this.selectedRune].level) {
                                         this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Saved", this.enemRunes[runed], "select"));
                                         this.faders.push(new Fader(50 + 2 * (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Defending", this.enemRunes[i], "select"));
+                                        this.enemUsed.push(this.enemRunes[i]);
                                         this.enemRunes[i] = new this.runeClasses.Apathy(0);
+                                        this.youUsed.push(runes[this.selectedRune]);
                                         runes[this.selectedRune] = new this.runeClasses.Apathy(0);
                                         trip = false;
                                         this.mode = "defend";
@@ -531,7 +547,9 @@ class Scene {
                                 }
                                 if (trip) {
                                     this.faders.push(new Fader(50 + (this.runeSize + 80), (canvas.height / 2) - this.runeSize / 2, "Victim", this.enemRunes[runed], "select"));
+                                    this.youUsed.push(runes[this.selectedRune]);
                                     runes[this.selectedRune] = new this.runeClasses.Apathy(0);
+                                    this.enemUsed.push(this.enemRunes[runed]);
                                     this.enemRunes[runed] = new this.runeClasses.Apathy(0);
                                     this.mode = "defend";
                                 }
@@ -556,7 +574,7 @@ class Scene {
             }
         }
     }
-    drawLevel(die){
+    drawLevel(die) {
         return die.name !== 'Destruction' && die.name !== 'Sustenance' && die.name !== 'Apathy' && die.name !== 'Decay' && die.name !== 'Balance' && die.name !== 'Time';
     }
     render() {
@@ -712,7 +730,9 @@ class Scene {
                         if (scene.runes[scene.selectedRune].level >= scene.enemRunes[scene.attacker].level) {
                             if (scene.enemRunes[scene.attacker].name == "Regeneration" || scene.enemRunes[scene.attacker].name == "Decay") {
                                 scene.faders.push(new Fader(50 + 2 * (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.runes[scene.selectedRune], "defend"));
+                                scene.youUsed.push(scene.runes[scene.selectedRune]);
                                 scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
+                                scene.enemUsed.push(scene.enemRunes[scene.attacker]);
                                 scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
                                 scene.mode = "offend";
                             }
@@ -735,7 +755,9 @@ class Scene {
                             if (scene.enemRunes[i].name == "Balance") {
                                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
                                 scene.faders.push(new Fader(50 + (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.enemRunes[i], "offend"));
+                                scene.enemRunes.push(scene.enemRunes[i]);
                                 scene.enemRunes[i] = new scene.runeClasses.Apathy(0);
+                                scene.youUsed.push(scene.runes[scene.selectedRune]);
                                 scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                                 drain = false;
                                 scene.mode = "defend";
@@ -750,13 +772,14 @@ class Scene {
                                 }
                             }
                             scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
+                            scene.youUsed.push(scene.runes[scene.selectedRune]);
                             scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                             scene.mode = "defend";
                         }
                     } else if (scene.mode == "defend") {
                         let stab = true;
                         for (let i = 0; i < scene.runes.length; i++) {
-                            if (scene.runes[i].name == "Balance"  && !scene.skipping) {
+                            if (scene.runes[i].name == "Balance" && !scene.skipping) {
                                 stab = false;
                                 break;
                             }
@@ -798,6 +821,7 @@ class Scene {
                         } else {
                             scene.sideInfo = "No enemy runes left to destroy.";
                             scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Discarded", scene.runes[scene.selectedRune], "select"));
+                            scene.youUsed.push(scene.runes[scene.selectedRune]);
                             scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                             scene.mode = "defend";
                         }
@@ -810,7 +834,9 @@ class Scene {
                             }
                         }
                         if (risk) {
+                            scene.enemUsed.push(scene.enemRunes[scene.attacker]);
                             scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
+                            scene.youUsed.push(scene.runes[scene.targeted]);
                             scene.runes[scene.targeted] = new scene.runeClasses.Apathy(0);
                             scene.mode = "offend";
                         }
@@ -846,7 +872,9 @@ class Scene {
                             if (scene.enemRunes[i].name == "Sustenance") {
                                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
                                 scene.faders.push(new Fader(50 + (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.enemRunes[i], "offend"));
+                                scene.enemUsed.push(scene.enemRunes[i]);
                                 scene.enemRunes[i] = new scene.runeClasses.Apathy(0);
+                                scene.youUsed.push(scene.runes[scene.selectedRune]);
                                 scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                                 attack = false;
                                 scene.mode = "defend";
@@ -858,6 +886,7 @@ class Scene {
                             for (let i = 0; i < scene.runes[scene.selectedRune].level; i++) {
                                 scene.bullets.push(new Boom(scene.you.x + 10, scene.you.y + 20, scene.enem.x - 50, scene.enem.y + 120, "enem"))
                             }
+                            scene.youUsed.push(scene.runes[scene.selectedRune]);
                             scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                             scene.mode = "defend";
                         }
@@ -873,6 +902,7 @@ class Scene {
                             for (let i = 0; i < scene.enemRunes[scene.attacker].level; i++) {
                                 scene.bullets.push(new Boom(scene.enem.x + 100, scene.enem.y + 40, scene.you.x + 120, scene.you.y + 120, "you"))
                             }
+                            scene.enemUsed.push(scene.enemRunes[scene.attacker]);
                             scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
                             scene.mode = "offend";
                         }
@@ -892,6 +922,7 @@ class Scene {
                     if (scene.mode == "offend") {
                         scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
                         let oldlevel = scene.runes[scene.selectedRune].level;
+                        scene.youUsed.push(scene.runes[scene.selectedRune]);
                         scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                         for (let i = 0; i < scene.runes.length; i++) {
                             if (scene.runes[i].name != "Invigoration" && scene.runes[i].name != "Fury" && scene.runes[i].name != "Impatience") {
@@ -906,6 +937,7 @@ class Scene {
                                 scene.enemRunes[i].level += scene.enemRunes[scene.attacker].level;
                             }
                         }
+                        scene.enemUsed.push(scene.enemRunes[scene.attacker]);
                         scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
                         scene.mode = "offend";
                     }
@@ -935,6 +967,7 @@ class Scene {
                         } else {
                             scene.sideInfo = "No appropriate runes to remove.";
                             scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Discarded", scene.runes[scene.selectedRune], "select"));
+                            scene.youUsed.push(scene.runes[scene.selectedRune]);
                             scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                             scene.mode = "defend";
                         }
@@ -947,7 +980,9 @@ class Scene {
                             }
                         }
                         if (risk) {
+                            scene.youUsed.push(scene.runes[scene.targeted]);
                             scene.runes[scene.targeted] = new scene.runeClasses.Apathy(0);
+                            scene.enemUsed.push(scene.enemRunes[scene.attacker]);
                             scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
                             scene.mode = "offend";
                         }
@@ -969,7 +1004,9 @@ class Scene {
                         if (scene.runes[scene.selectedRune].level >= scene.enemRunes[scene.attacker].level) {
                             if (scene.enemRunes[scene.attacker].name == "Transmution" || scene.enemRunes[scene.attacker].name == "Pacification" && this !== scene.runes[scene.targeted]) {
                                 scene.faders.push(new Fader(50 + 2 * (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.runes[scene.selectedRune], "defend"));
+                                scene.youUsed.push(scene.runes[scene.selectedRune]);
                                 scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
+                                scene.enemUsed.push(scene.enemRunes[scene.attacker]);
                                 scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
                                 scene.mode = "offend";
                             }
@@ -993,7 +1030,9 @@ class Scene {
                             if (scene.enemRunes[i].name == "Balance") {
                                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
                                 scene.faders.push(new Fader(50 + (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.enemRunes[i], "offend"));
+                                scene.enemUsed.push(scene.enemRunes[i]);
                                 scene.enemRunes[i] = new scene.runeClasses.Apathy(0);
+                                scene.youUsed.push(scene.runes[scene.selectedRune]);
                                 scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                                 heal = false;
                                 scene.mode = "defend";
@@ -1006,6 +1045,7 @@ class Scene {
                             if (scene.youLife > scene.youMaxLife) {
                                 scene.youLife = scene.youMaxLife;
                             }
+                            scene.youUsed.push(scene.runes[scene.selectedRune]);
                             scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                             scene.mode = "defend";
                         }
@@ -1022,6 +1062,7 @@ class Scene {
                             if (scene.enemLife > scene.enemMaxLife) {
                                 scene.enemLife = scene.enemMaxLife;
                             }
+                            scene.enemUsed.push(scene.enemRunes[scene.attacker]);
                             scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
                             scene.mode = "offend";
                         }
@@ -1041,7 +1082,9 @@ class Scene {
                     if (scene.mode == "defend") {
                         if (scene.enemRunes[scene.attacker].name == "Impatience" || scene.enemRunes[scene.attacker].name == "Destruction" && this != scene.runes[scene.targeted]) {
                             scene.faders.push(new Fader(50 + 2 * (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.runes[scene.selectedRune], "defend"));
+                            scene.youUsed.push(scene.runes[scene.selectedRune]);
                             scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
+                            scene.enemUsed.push(scene.enemRunes[scene.attacker]);
                             scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
                             scene.mode = "offend";
                         }
@@ -1054,28 +1097,22 @@ class Scene {
             constructor(level) {
                 this.name = "Time";
                 this.type = "offense";
-                this.descript = "Randomly transforms into a previously used rune.";
+                this.descript = "Transforms into a random previously used rune.";
                 this.level = level;
-                this.image = spriteManager.unknown;
+                this.image = spriteManager.time;
                 this.action = function (scene) {
-                    if (scene.mode == "offend") {
+                    if (scene.mode === 'offend') {
                         scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
-                        let oldlevel = scene.runes[scene.selectedRune].level;
-                        scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
-                        for (let i = 0; i < scene.runes.length; i++) {
-                            if (scene.runes[i].name != "Invigoration" && scene.runes[i].name != "Fury" && scene.runes[i].name != "Impatience") {
-                                scene.runes[i].level += oldlevel;
-                            }
+                        if (scene.youUsed.length > 0) {
+                            let randUsed = scene.youUsed[Math.floor(Math.random() * scene.youUsed.length)];
+                            scene.youUsed = scene.youUsed.filter(u => u !== randUsed);
+                            scene.runes[scene.selectedRune] = randUsed;
+                            scene.mode = "defend";
                         }
-
-                        scene.mode = "defend";
-                    } else if (scene.mode == "defend") {
-                        for (let i = 0; i < scene.enemRunes.length; i++) {
-                            if (scene.enemRunes[i].name != "Invigoration" && scene.enemRunes[i].name != "Fury" && scene.enemRunes[i].name != "Impatience") {
-                                scene.enemRunes[i].level += scene.enemRunes[scene.attacker].level;
-                            }
-                        }
-                        scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
+                    } else if (scene.mode == "defend" && scene.enemUsed.length > 0) {
+                        let randUsed = scene.enemUsed[Math.floor(Math.random() * scene.enemUsed.length)];
+                        scene.enemUsed = scene.enemUsed.filter(u => u !== randUsed);
+                        scene.enemRunes[scene.attacker] = randUsed;
                         scene.mode = "offend";
                     }
                 }
@@ -1111,6 +1148,7 @@ class Scene {
                         } else {
                             scene.sideInfo = "No appropriate runes to transmute.";
                             scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.sruneSize / 2, "Discarded", scene.runes[scene.selectedRune], "select"));
+                            scene.youUsed.push(scene.runes[scene.selectedRune]);
                             scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                             scene.mode = "defend";
                         }
@@ -1125,6 +1163,7 @@ class Scene {
                         if (risk) {
                             let randRoll = Math.floor(Math.random() * 6) + 1;
                             scene.runes[scene.targeted] = new scene.runeClasses[scene.dice[scene.targeted][randRoll][0]](scene.dice[scene.targeted][randRoll][1]);
+                            scene.enemUsed.push(scene.enemRunes[scene.attacker]);
                             scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
                             scene.mode = "offend";
                         }
@@ -1133,13 +1172,13 @@ class Scene {
             }
         },
 
-        
+
 
         Unknown: class {
             constructor(level) {
                 this.name = "Unknown";
                 this.type = "offense";
-                this.descript = "Randomly transforms into either a fury, pacification, transmution, or rage rune.";
+                this.descript = "Transforms into either a Fury, Pacification, Transmution, or Rage rune at random.";
                 this.level = level;
                 this.image = spriteManager.unknown;
                 this.action = function (scene) {
@@ -1171,7 +1210,7 @@ class Scene {
                 }
             }
         }
-        
+
     }
 }
 
