@@ -1,4 +1,3 @@
-
 const spriteManager = new SpriteManager();
 
 class Game {
@@ -20,6 +19,7 @@ class Scene {
         this.youLocked;
         this.runeSize = 65;
         this.sideBarX = 600;
+        this.youPasses = 0;
         this.canvas.addEventListener('click', this.click.bind(this));
         this.canvas.onmousemove = (event) => {
             this.x = event.clientX;
@@ -120,6 +120,7 @@ class Scene {
                 this.enemLockedIndex = -1;
                 this.youUsed = [];
                 this.enemUsed = [];
+                this.youPasses = 0;
                 this.phase = 'prep';
                 this.mode = "offend";
             }
@@ -327,6 +328,7 @@ class Scene {
     }
     skip() {
         this.skipColor = '#A0522D';
+        this.youPasses++;
         if (this.mode !== 'defend') {
             this.useButton.x = -50;
             this.useButton.y = -50;
@@ -370,8 +372,8 @@ class Scene {
                     this.mode = "stay";
                     this.faders.push(new Fader(50 + (this.runeSize + 80), (this.canvas.height / 2) - this.runeSize / 2, 'You win!', this.blank, 'stay'));
                     this.runeOpac = -1;
-                    this.youLife = 10;
-                    this.enemLife = 10;
+                    this.youLife = this.youMaxLife;
+                    this.enemLife = this.youMaxLife;
                     this.phase = 'roll';
                     break;
                 }
@@ -383,8 +385,8 @@ class Scene {
                     this.mode = "stay";
                     this.faders.push(new Fader(50 + (this.runeSize + 80), (this.canvas.height / 2) - this.runeSize / 2, 'You lose!', this.blank, 'stay'));
                     this.runeOpac = -1;
-                    this.youLife = 10;
-                    this.enemLife = 10;
+                    this.youLife = this.youMaxLife;
+                    this.enemLife = this.youMaxLife;
                     this.phase = 'roll';
                     break;
                 }
@@ -727,15 +729,13 @@ class Scene {
                 this.image = spriteManager.balance;
                 this.action = function (scene) {
                     if (scene.mode == "defend") {
-                        if (scene.runes[scene.selectedRune].level >= scene.enemRunes[scene.attacker].level) {
-                            if (scene.enemRunes[scene.attacker].name == "Regeneration" || scene.enemRunes[scene.attacker].name == "Decay") {
-                                scene.faders.push(new Fader(50 + 2 * (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.runes[scene.selectedRune], "defend"));
-                                scene.youUsed.push(scene.runes[scene.selectedRune]);
-                                scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
-                                scene.enemUsed.push(scene.enemRunes[scene.attacker]);
-                                scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
-                                scene.mode = "offend";
-                            }
+                        if (scene.enemRunes[scene.attacker].name == "Regeneration" || scene.enemRunes[scene.attacker].name == "Decay") {
+                            scene.faders.push(new Fader(50 + 2 * (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.runes[scene.selectedRune], "defend"));
+                            scene.youUsed.push(scene.runes[scene.selectedRune]);
+                            scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
+                            scene.enemUsed.push(scene.enemRunes[scene.attacker]);
+                            scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);
+                            scene.mode = "offend";
                         }
                     }
                 }
@@ -755,7 +755,7 @@ class Scene {
                             if (scene.enemRunes[i].name == "Balance") {
                                 scene.faders.push(new Fader(50, (scene.canvas.height / 2) - scene.runeSize / 2, "Your Rune", scene.runes[scene.selectedRune], "offend"));
                                 scene.faders.push(new Fader(50 + (scene.runeSize + 80), (scene.canvas.height / 2) - scene.runeSize / 2, "Defense", scene.enemRunes[i], "offend"));
-                                scene.enemRunes.push(scene.enemRunes[i]);
+                                scene.enemUsed.push(scene.enemRunes[i]);
                                 scene.enemRunes[i] = new scene.runeClasses.Apathy(0);
                                 scene.youUsed.push(scene.runes[scene.selectedRune]);
                                 scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
@@ -1107,12 +1107,18 @@ class Scene {
                             let randUsed = scene.youUsed[Math.floor(Math.random() * scene.youUsed.length)];
                             scene.youUsed = scene.youUsed.filter(u => u !== randUsed);
                             scene.runes[scene.selectedRune] = randUsed;
-                            scene.mode = "defend";
+                        } else {
+                            scene.runes[scene.selectedRune] = new scene.runeClasses.Apathy(0);
                         }
-                    } else if (scene.mode == "defend" && scene.enemUsed.length > 0) {
-                        let randUsed = scene.enemUsed[Math.floor(Math.random() * scene.enemUsed.length)];
-                        scene.enemUsed = scene.enemUsed.filter(u => u !== randUsed);
-                        scene.enemRunes[scene.attacker] = randUsed;
+                        scene.mode = "defend";
+                    } else if (scene.mode == "defend") {
+                        if (scene.enemUsed.length > 0) {
+                            let randUsed = scene.enemUsed[Math.floor(Math.random() * scene.enemUsed.length)];
+                            scene.enemUsed = scene.enemUsed.filter(u => u !== randUsed);
+                            scene.enemRunes[scene.attacker] = randUsed;
+                        } else {
+                            scene.enemRunes[scene.attacker] = new scene.runeClasses.Apathy(0);   
+                        }
                         scene.mode = "offend";
                     }
                 }
