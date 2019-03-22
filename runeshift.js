@@ -1,3 +1,4 @@
+
 const spriteManager = new SpriteManager();
 
 class Game {
@@ -74,6 +75,12 @@ class Scene {
         image: new Image(),
         level: "",
         name: ""
+    }
+    cancelButton = {
+        x: 600,
+        y: 310,
+        width: 200,
+        height: 30
     }
     skipButton = {
         x: 600,
@@ -574,6 +581,11 @@ class Scene {
             if (e.clientX > this.lockButton.x && e.clientX < this.lockButton.x + this.lockButton.width && e.clientY > this.lockButton.y && e.clientY < this.lockButton.y + this.lockButton.height) {
                 this.lock();
             }
+            if (e.clientX > this.cancelButton.x && e.clientX < this.cancelButton.x + this.cancelButton.width && e.clientY > this.cancelButton.y && e.clientY < this.cancelButton.y + this.cancelButton.height) {
+                this.selectedRune = undefined;
+                this.mode = "offend";
+                this.faders = [];
+            }
         }
     }
     drawLevel(die) {
@@ -706,6 +718,10 @@ class Scene {
         ctx.fillRect(this.lockButton.x, this.lockButton.y, this.lockButton.width, this.lockButton.height);
         ctx.fillStyle = 'white';
         ctx.fillText('Lock', this.lockButton.x + this.lockButton.width / 2 - ctx.measureText('Lock').width / 2, this.lockButton.y + 20);
+        ctx.fillStyle = '#A0522D';
+        ctx.fillRect(this.cancelButton.x, this.cancelButton.y, this.cancelButton.width, this.cancelButton.height);
+        ctx.fillStyle = 'white';
+        ctx.fillText('Cancel', this.cancelButton.x + this.cancelButton.width / 2 - ctx.measureText('cancel').width / 2, this.cancelButton.y + 20);
 
     }
     runeClasses = {
