@@ -1,0 +1,10 @@
+{
+	"name":"RuneShift",
+	"tags":["Game"],
+	"description":"An updated version of a strategy game made in 72 hours for Ludum Dare 35, theme \"shapeshift.\"",
+	"embed":{
+		"width":800,
+		"height":500,
+		"file":"LD35.html"
+	}
+}
